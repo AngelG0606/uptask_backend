@@ -3,7 +3,8 @@ import { ProjectController } from '../controllers/ProjectController'
 import  { body, param }  from 'express-validator';
 import { handleInputErrors } from '../middleware/validation';
 import { TaskController } from '../controllers/TaskController';
-import { validateProjectExists } from '../middleware/project';
+import { projectExists } from '../middleware/project';
+import { taskBelongsToProject, taskExists } from '../middleware/task';
 
 
 const router = Router()
@@ -39,9 +40,12 @@ router.delete('/:projectId',
     ProjectController.deleteProject
 )
 
+
+
 //Routes for tasks
+router.param('projectId', projectExists)
+
 router.post('/:projectId/tasks',
-    validateProjectExists,
     body("name").notEmpty().withMessage('El nombre de la tarea es obligatoria'), 
     body("description").notEmpty().withMessage('La descripcion de la tarea es obligatoria'),
     handleInputErrors,    
@@ -49,8 +53,38 @@ router.post('/:projectId/tasks',
 )
 
 router.get('/:projectId/tasks' ,
-    validateProjectExists,
     TaskController.getProjectTasks
+)
+
+
+router.param('taskId', taskExists)
+router.param('taskId', taskBelongsToProject)
+
+router.get('/:projectId/tasks/:taskId',
+    param("taskId").isMongoId().withMessage('ID no válido'),
+    handleInputErrors,
+    TaskController.getTasksById
+)
+
+router.put('/:projectId/tasks/:taskId',
+    param("taskId").isMongoId().withMessage('ID no válido'),
+    body("name").notEmpty().withMessage('El nombre de la tarea es obligatoria'), 
+    body("description").notEmpty().withMessage('La descripcion de la tarea es obligatoria'),
+    handleInputErrors,
+    TaskController.updateTask
+)
+
+router.delete('/:projectId/tasks/:taskId', 
+    param("taskId").isMongoId().withMessage('ID no válido'),
+    handleInputErrors,
+    TaskController.deleteTask
+)
+
+router.post('/:projectId/tasks/:taskId/status', 
+    param("taskId").isMongoId().withMessage('ID no válido'),
+    body("status").notEmpty().withMessage('El estado de la tarea es obligatorio'),
+    handleInputErrors,
+    TaskController.updateStatus
 )
 
 

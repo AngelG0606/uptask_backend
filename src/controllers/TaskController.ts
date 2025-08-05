@@ -27,15 +27,50 @@ export class TaskController {
     }
 
     static getTasksById = async (req : Request, res : Response) => {
+        try {
+            res.json(req.task)
 
+        } catch (error) {
+            // console.log(error)
+            res.status(500).json({error : 'Hubo un error'})
+        }
     }
 
     static updateTask = async (req : Request, res : Response) => {
-
+        try {
+            req.task.name = req.body.name
+            req.task.description = req.body.description
+            await req.task.save()
+            res.send('Tarea actualizada correctamente')
+        } catch (error) {
+            // console.log(error)
+            res.status(500).json({error : 'Hubo un error'})
+        }
     }
 
     static deleteTask = async (req : Request, res : Response) => {
-
+        try {
+            req.project.tasks = req.project.tasks.filter(task  => task.toString()  !== req.task.id.toString())
+            await Promise.allSettled([req.task.deleteOne(), req.project.save()])
+            res.send('Tarea eliminada correctamente')
+        } catch (error) {
+            // console.log(error)
+            res.status(500).json({error : 'Hubo un error'})
+        }
     }
+
+    static updateStatus = async (req : Request, res : Response) => {
+        try {
+            const { status } = req.body
+            req.task.status = status
+            await req.task.save()
+            res.send('Status de la tarea actualizado correctamente')
+
+        } catch (error) {
+            // console.log(error)
+            res.status(500).json({error : 'Hubo un error'})
+        }
+    }
+    
  
 }
