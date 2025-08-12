@@ -20,7 +20,11 @@ export class ProjectController {
 
     static getAllProjects = async (req : Request, res : Response) => {
         try {
-           const projects = await Project.find().populate('tasks')
+           const projects = await Project.find({
+            $or : [
+                {manager : {$in: req.user.id}}
+            ]
+           }).populate('tasks')
            res.json(projects) 
         } catch (error) {
             console.log(error)
@@ -37,6 +41,13 @@ export class ProjectController {
                 res.status(404).json({error : error.message})
                 return
             }
+
+            if(project.manager.toString() !== req.user.id.toString()) {
+                const error = new Error('Acción no válida')
+                res.status(404).json({error : error.message})
+                return
+            }
+
             res.json(project)
 
         } catch (error) {
@@ -54,6 +65,11 @@ export class ProjectController {
                 res.status(404).json({error : error.message})
                 return
             }
+            if(project.manager.toString() !== req.user.id.toString()) {
+                const error = new Error('Acción no válida')
+                res.status(404).json({error : error.message})
+                return
+            }
             await project.updateOne(req.body)
             res.send('Proyecto actualizado correctamente')
         } catch (error) {
@@ -68,6 +84,11 @@ export class ProjectController {
             const project = await Project.findById(projectId)
             if(!project) {
                 const error = new Error('Proyecto no encontrado')
+                res.status(404).json({error : error.message})
+                return
+            }
+            if(project.manager.toString() !== req.user.id.toString()) {
+                const error = new Error('Acción no válida')
                 res.status(404).json({error : error.message})
                 return
             }

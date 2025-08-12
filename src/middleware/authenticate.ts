@@ -15,7 +15,7 @@ export const authenticate = async (req : Request, res : Response, next : NextFun
 
     if(!bearer) {
         const error = new Error('No Autorizado')
-        res.status(500).json({error : error.message})
+        res.status(401).json({error : error.message})
         return
     }
 
@@ -25,9 +25,10 @@ export const authenticate = async (req : Request, res : Response, next : NextFun
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         if(typeof decoded === 'object' && decoded.id) {
-            const user = await User.findById(decoded.id).select('id name email')
+            const user = await User.findById(decoded.id).select('_id name email')
             if(user) {
                 req.user = user
+                next()
             } else {
                 res.status(500).json({error : 'Token no válido'})
             }
