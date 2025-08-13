@@ -58,20 +58,8 @@ export class ProjectController {
     }
 
     static updateProject = async (req : Request, res : Response) => {
-        try {
-            const { projectId } = req.params
-            const project = await Project.findById(projectId)
-            if(!project) {
-                const error = new Error('Proyecto no encontrado')
-                res.status(404).json({error : error.message})
-                return
-            }
-            if(project.manager.toString() !== req.user.id.toString()) {
-                const error = new Error('Acción no válida')
-                res.status(404).json({error : error.message})
-                return
-            }
-            await project.updateOne(req.body)
+        try {       
+            await req.project.updateOne(req.body)
             res.send('Proyecto actualizado correctamente')
         } catch (error) {
             console.log(error)
@@ -81,19 +69,7 @@ export class ProjectController {
 
     static deleteProject = async (req : Request, res : Response) => {
         try {
-            const { projectId } = req.params
-            const project = await Project.findById(projectId)
-            if(!project) {
-                const error = new Error('Proyecto no encontrado')
-                res.status(404).json({error : error.message})
-                return
-            }
-            if(project.manager.toString() !== req.user.id.toString()) {
-                const error = new Error('Acción no válida')
-                res.status(404).json({error : error.message})
-                return
-            }
-            await project.deleteOne()
+            await req.project.deleteOne()
             res.send('Proyecto Eliminado Correctamente')
 
         } catch (error) {

@@ -13,6 +13,7 @@ import { NoteController } from '../controllers/NoteController';
 const router = Router()
 
 router.use(authenticate)
+
 router.post('/',
     body("projectName").notEmpty().withMessage('El Nombre del proyecto es obligatorio'),
     body("clientName").notEmpty().withMessage('El Nombre del cliente es obligatorio'),
@@ -30,25 +31,27 @@ router.get('/:projectId',
     ProjectController.getProjectById
 )
 
+router.param('projectId', projectExists)
+
 router.put('/:projectId', 
     param("projectId").isMongoId().withMessage('ID no válido'),
     body("projectName").notEmpty().withMessage('El Nombre del proyecto es obligatorio'),
     body("clientName").notEmpty().withMessage('El Nombre del cliente es obligatorio'),
     body("description").notEmpty().withMessage('La Descripción del proyecto es obligatoria'),
     handleInputErrors,
+    hasAuthorization,
     ProjectController.updateProject 
 )
 
 router.delete('/:projectId',
     param("projectId").isMongoId().withMessage('ID no válido'),
+    hasAuthorization,
     ProjectController.deleteProject
 )
 
 
 
 //Routes for tasks
-router.param('projectId', projectExists)
-
 router.post('/:projectId/tasks',
     hasAuthorization,
     body("name").notEmpty().withMessage('El nombre de la tarea es obligatoria'), 
